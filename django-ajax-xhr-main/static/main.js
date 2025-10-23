@@ -17,6 +17,7 @@ function getCookie(name) {
 
 
 function getAllTodos(url) {
+  
   fetch(url, {
     headers: {
       "X-Requested-With": "XMLHttpRequest",
@@ -39,13 +40,39 @@ function getAllTodos(url) {
 }
 
 
+
+  const operationGetAllTodos = async (url) => {
+       r = await fetch(url, {
+        headers: {
+          "X-Requested-With": "XMLHttpRequest",
+        }
+      })
+
+      dt = await  r.json();
+
+    const todoList = document.getElementById("todoList");
+    todoList.innerHTML = "";
+
+    (dt.context).forEach(todo => {
+      const todoHTMLElement = `
+        <li>
+          <p>Task: ${todo.task}</p>
+          <p>Completed?: ${todo.completed}</p>
+        </li>`
+        todoList.innerHTML += todoHTMLElement;
+    });
+
+
+};
+
+
 function addTodo(url, payload) {
   fetch(url, {
     method: "POST",
     credentials: "same-origin",
     headers: {
       "X-Requested-With": "XMLHttpRequest",
-      "X-CSRFToken": getCookie("csrftoken"),
+      // "X-CSRFToken": getCookie("csrftoken"),
     },
     body: JSON.stringify({payload: payload})
   })

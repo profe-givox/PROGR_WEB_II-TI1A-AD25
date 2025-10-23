@@ -76,7 +76,7 @@
 
 {% block javascript %}
 <script>
-
+  
   // fetch api examples
   (function() {
 
@@ -87,7 +87,9 @@
      // GET all todos
     const readButton = document.getElementById("getTodos");
     readButton.addEventListener("click", () => {
-      getAllTodos(allTodosUrl);
+      //getAllTodos(allTodosUrl);
+      //getAllTodosWithAsync(allTodosUrl);
+      operationGetAllTodos(allTodosUrl);
     });
 
     // POST
