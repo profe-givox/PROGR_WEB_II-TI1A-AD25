@@ -91,4 +91,5 @@ jobs:
       #     source venv/bin/activate
       #     cd ./rumapp-park-back && gunicorn --bind 0.0.0.0:8000 rumapp_park_back.wsgi:application
       - name: Reset supervisor
-        run: sudo service supervisor restart
+        run: |
+          service supervisor restart
