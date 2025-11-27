@@ -1,0 +1,78 @@
+name: CI-CD Django Self-Hosted                     # Nombre del workflow
+
+on:                                                # Define los eventos que disparan el workflow
+  push:                                            # Cuando se hace un push
+    branches:                                      # Especifica las ramas donde aplicará
+      - main                                       # Solo ejecuta en la rama main
+  pull_request:                                    # También en solicitudes de cambio (pull requests)
+    branches:
+      - main                                       # Solo si el PR va hacia main
+
+jobs:                                              # Sección donde se definen los trabajos (jobs)
+  ci:                                              # Job de Integración Continua
+    runs-on: self-hosted                           # INDIQUE EL USO DE RUNNER AUTOHOSPEDADO
+                                                   # El runner debe haberse registrado previamente
+
+    steps:                                         # Lista de pasos a ejecutar dentro del job
+      - name: Checkout del repositorio             # Nombre del paso
+        uses: actions/checkout@v3                  # Acción oficial para descargar el código del repo
+                                                   # Permite que el workflow trabaje con el código fuente
+
+      - name: Configurar Python                    # Configura Python en el runner autohospedado
+        uses: actions/setup-python@v4              # Acción para instalar la versión requerida de Python
+        with:                                      # Parámetros enviados a la acción
+          python-version: '3.11'                   # Versión específica de Python requerida para Django
+
+      - name: Actualizar pip e instalar dependencias  # Instala dependencias del proyecto
+        run: |                                     # Ejecuta comandos en el runner autohospedado
+          python -m pip install --upgrade pip      # Actualiza pip a la última versión
+          pip install -r requirements.txt          # Instala las dependencias listadas en el proyecto
+
+      - name: Establecer variables de entorno para pruebas  # Configura variables del entorno
+        run: |                                     # Comandos que agregan variables al entorno del job
+          echo "DJANGO_SETTINGS_MODULE=config.settings_ci" >> $GITHUB_ENV # Apunta a settings CI
+          echo "DATABASE_URL=sqlite:///ci_db.sqlite3" >> $GITHUB_ENV       # Base de datos temporal
+                                                   # En self-hosted puedes usar PostgreSQL o SQLite
+                                                   # Aquí usamos SQLite para simplificar
+
+      - name: Ejecutar migraciones                 # Antes de pruebas aplica migraciones
+        run: python manage.py migrate --noinput    # Prepara la base de datos temporal
+
+      - name: Ejecutar pruebas                     # Ejecuta pruebas unitarias
+        run: python manage.py test                 # Comando estándar de Django para correr tests
+
+      - name: Analizar calidad del código con flake8  # Paso opcional de análisis de calidad
+        run: |                                     # Bloque de comandos shell
+          pip install flake8                       # Instala flake8 si no está instalado
+          flake8 .                                 # Revisa el código del proyecto
+
+  cd:                                              # Job de Despliegue Continuo
+    needs: ci                                      # Este job depende de que CI se ejecute correctamente
+    runs-on: self-hosted                           # Este job también corre en un runner autohospedado
+    if: github.ref == 'refs/heads/main'            # Solo se ejecuta si la referencia es la rama main
+
+    steps:                                         # Lista de pasos del proceso de despliegue
+      - name: Checkout del repositorio             # Necesario para obtener el código
+        uses: actions/checkout@v3                  # Descarga el código de la rama main
+
+      - name: Activar entorno virtual              # Activa el entorno virtual del servidor (self-hosted)
+        run: |                                     # El servidor debe tener un venv ya creado
+          source /opt/djangoapp/venv/bin/activate  # Ruta de ejemplo hacia el entorno virtual
+                                                   # Se adapta al servidor real
+
+      - name: Instalar dependencias en el servidor # Instala dependencias directamente en el ambiente productivo
+        run: |
+          pip install -r requirements.txt          # Actualiza librerías usando requirements.txt
+
+      - name: Ejecutar migraciones                 # Aplica cambios de base de datos en producción
+        run: |
+          python manage.py migrate --noinput       # Ejecuta migraciones de Django
+
+      - name: Recopilar archivos estáticos         # Prepara archivos estáticos en producción
+        run: |
+          python manage.py collectstatic --noinput # Copia archivos estáticos para servirlos desde producción
+
+      - name: Reiniciar servicios                  # Reinicia el servicio (gunicorn / uvicorn / nginx)
+        run: |                                     # Se asume systemd como administrador
+          sudo systemctl restart gunicorn          # Reinicia el servicio de la aplicación Django
+          sudo systemctl restart nginx             # Reinicia el servidor web Nginx

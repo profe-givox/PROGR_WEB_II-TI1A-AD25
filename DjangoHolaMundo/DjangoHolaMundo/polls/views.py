@@ -10,9 +10,14 @@ class GatoViewDetail (generic.DetailView):
     model = Question
     template_name = 'polls/detail.html'
 
-class ResultView (generic.DetailView):
+
+from django.contrib.auth.mixins import LoginRequiredMixin
+class ResultView ( LoginRequiredMixin,  generic.DetailView):
+    login_url = "/login/"
+
     model = Question
     template_name = 'polls/results.html'
+
 class IndexView(generic.ListView):
     template_name = 'polls/index.html'
     context_object_name = 'latest_question_list'

@@ -61,8 +61,6 @@ function getAllTodos(url) {
         </li>`
         todoList.innerHTML += todoHTMLElement;
     });
-
-
 };
 
 

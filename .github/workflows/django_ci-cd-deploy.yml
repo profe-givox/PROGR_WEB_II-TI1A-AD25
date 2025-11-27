@@ -1,0 +1,93 @@
+name: CI CD Django
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest  # Puedes utilizar un runner predeterminado de GitHub Actions para los tests
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: database
+          POSTGRES_USER: userdev
+          POSTGRES_PASSWORD: passworddev
+        ports:
+          - 5432:5432
+
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: [3.10.12]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: main
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m venv ./PROGR_WEB_II-TI1A-AD25/DjangoHolaMundo/.venv
+          source .venv/bin/activate
+          pip install -r ./PROGR_WEB_II-TI1A-AD25/DjangoHolaMundo/DjangoHolaMundo/requirements.txt
+
+      - name: Run migrations
+        run: |
+          source venv/bin/activate
+          python ./PROGR_WEB_II-TI1A-AD25/DjangoHolaMundo/DjangoHolaMundo/manage.py migrate
+
+      - name: Run tests
+        run: |
+          source venv/bin/activate
+          #python manage.py test
+
+  deploy:
+    #needs: test  # Este trabajo solo se ejecuta si el trabajo 'test' pasa
+    runs-on: self-hosted
+
+    strategy:
+      max-parallel: 4
+      #matrix:
+        #python-version: [3.10.12]
+
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v3
+        with:
+          ref: main
+          clean: false
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies # Se instala gunicorn pero debiese estar dentro de requiriments.txt
+        run: |
+          python -m venv ./PROGR_WEB_II-TI1A-AD25/DjangoHolaMundo/DjangoHolaMundo/.venv
+          source ./PROGR_WEB_II-TI1A-AD25/DjangoHolaMundo/.venv/bin/activate
+          pip install -r ./PROGR_WEB_II-TI1A-AD25/DjangoHolaMundo/DjangoHolaMundo/requirements.txt
+          pip install gunicorn
+
+      - name: Run migrations
+        run: |
+          source venv/bin/activate
+          python ./PROGR_WEB_II-TI1A-AD25/DjangoHolaMundo/DjangoHolaMundo/manage.py migrate
+          python ./PROGR_WEB_II-TI1A-AD25/DjangoHolaMundo/DjangoHolaMundo/manage.py collectstatic --noinput
+
+      # - name: Start Gunicorn
+      #   run: |
+      #     source venv/bin/activate
+      #     cd ./rumapp-park-back && gunicorn --bind 0.0.0.0:8000 rumapp_park_back.wsgi:application
+      - name: Reset supervisor
+        run: sudo service supervisor restart
