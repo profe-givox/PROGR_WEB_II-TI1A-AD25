@@ -75,7 +75,7 @@ jobs:
       - name: Install dependencies # Se instala gunicorn pero debiese estar dentro de requiriments.txt
         run: |
           pwd
-          python -m venv ./DjangoHolaMundo/.venv
+          python -m virtualenv ./DjangoHolaMundo/.venv
           source ./DjangoHolaMundo/.venv/bin/activate
           pip install -r ./DjangoHolaMundo/DjangoHolaMundo/requirements.txt
           pip install gunicorn
