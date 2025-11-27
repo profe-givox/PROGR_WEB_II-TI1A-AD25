@@ -74,16 +74,16 @@ jobs:
 
       - name: Install dependencies # Se instala gunicorn pero debiese estar dentro de requiriments.txt
         run: |
-          python -m venv ./PROGR_WEB_II-TI1A-AD25/DjangoHolaMundo/DjangoHolaMundo/.venv
-          source ./PROGR_WEB_II-TI1A-AD25/DjangoHolaMundo/.venv/bin/activate
-          pip install -r ./PROGR_WEB_II-TI1A-AD25/DjangoHolaMundo/DjangoHolaMundo/requirements.txt
+          python -m venv ./PROGR_WEB_II-TI1A-AD25/PROGR_WEB_II-TI1A-AD25/DjangoHolaMundo/.venv
+          source ./PROGR_WEB_II-TI1A-AD25/PROGR_WEB_II-TI1A-AD25/DjangoHolaMundo/.venv/bin/activate
+          pip install -r ./PROGR_WEB_II-TI1A-AD25/PROGR_WEB_II-TI1A-AD25/DjangoHolaMundo/DjangoHolaMundo/requirements.txt
           pip install gunicorn
 
       - name: Run migrations
         run: |
-          source venv/bin/activate
-          python ./PROGR_WEB_II-TI1A-AD25/DjangoHolaMundo/DjangoHolaMundo/manage.py migrate
-          python ./PROGR_WEB_II-TI1A-AD25/DjangoHolaMundo/DjangoHolaMundo/manage.py collectstatic --noinput
+          source ./PROGR_WEB_II-TI1A-AD25/PROGR_WEB_II-TI1A-AD25/DjangoHolaMundo/.venv/bin/activate
+          python ./PROGR_WEB_II-TI1A-AD25/PROGR_WEB_II-TI1A-AD25/DjangoHolaMundo/DjangoHolaMundo/manage.py migrate
+          python ./PROGR_WEB_II-TI1A-AD25/PROGR_WEB_II-TI1A-AD25/DjangoHolaMundo/DjangoHolaMundo/manage.py collectstatic --noinput
 
       # - name: Start Gunicorn
       #   run: |
