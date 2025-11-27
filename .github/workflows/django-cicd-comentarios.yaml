@@ -3,10 +3,10 @@ name: CI-CD Django Self-Hosted                     # Nombre del workflow
 on:                                                # Define los eventos que disparan el workflow
   push:                                            # Cuando se hace un push
     branches:                                      # Especifica las ramas donde aplicará
-      - main                                       # Solo ejecuta en la rama main
+      - mainster                                       # Solo ejecuta en la rama mainster
   pull_request:                                    # También en solicitudes de cambio (pull requests)
     branches:
-      - main                                       # Solo si el PR va hacia main
+      - mainster                                       # Solo si el PR va hacia mainster
 
 jobs:                                              # Sección donde se definen los trabajos (jobs)
   ci:                                              # Job de Integración Continua
@@ -49,11 +49,11 @@ jobs:                                              # Sección donde se definen l
   cd:                                              # Job de Despliegue Continuo
     needs: ci                                      # Este job depende de que CI se ejecute correctamente
     runs-on: self-hosted                           # Este job también corre en un runner autohospedado
-    if: github.ref == 'refs/heads/main'            # Solo se ejecuta si la referencia es la rama main
+    if: github.ref == 'refs/heads/mainster'            # Solo se ejecuta si la referencia es la rama mainster
 
     steps:                                         # Lista de pasos del proceso de despliegue
       - name: Checkout del repositorio             # Necesario para obtener el código
-        uses: actions/checkout@v3                  # Descarga el código de la rama main
+        uses: actions/checkout@v3                  # Descarga el código de la rama mainster
 
       - name: Activar entorno virtual              # Activa el entorno virtual del servidor (self-hosted)
         run: |                                     # El servidor debe tener un venv ya creado
